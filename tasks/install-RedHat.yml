@@ -16,3 +16,8 @@
   with_items:
     - "{{ redis_sentinel_conf_file }}"
     - "{{ redis_conf_file }}"
+
+- name: Install redis_extra_packages
+  yum:
+    name: "{{ redis_extra_packages }}"
+    state: present

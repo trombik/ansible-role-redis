@@ -53,7 +53,7 @@
   changed_when: false
   when: redis_sentinel_enable and
         (
-          redis_sentinel_group[0] in ansible_all_ipv4_addresses or 
+          redis_sentinel_group[0] in ansible_all_ipv4_addresses or
           redis_sentinel_group[0] == ansible_fqdn or
           redis_sentinel_group[0] == ansible_hostname
         )
@@ -135,7 +135,7 @@
   shell: "redis-cli -h {{ redis_sentinel_group[0] }} -p {{ redis_sentinel_config_merged['port'] }} info | grep 'address=' | awk -F 'address=' '{print $2}' | tr ',' '\n' | grep ':' | awk -F ':' '{print $1}'"
   changed_when: False
   when: redis_sentinel_enable and
-        not redis_fact_is_master and 
+        not redis_fact_is_master and
         not redis_fact_has_slaveof
   register: redis_register_real_master
 
@@ -151,7 +151,7 @@
   #
   # - slaveof is inserted by redis user
   # - redis fails to start when same master is both in the files
-  # 
+  #
   # insert slaveof when:
   #
   # - when sentinel is enabled

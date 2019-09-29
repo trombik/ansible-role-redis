@@ -106,6 +106,12 @@ end
 
 describe command "redis-cli -a #{redis_password} ping" do
   its(:stdout) { should match(/PONG/) }
-  its(:stderr) { should eq "" }
+  # XXX 5.0 has `--no-auth-warning` but not 4.x
+  case os[:family]
+  when "freebsd", "openbsd"
+    its(:stderr) { should eq "Warning: Using a password with '-a' option on the command line interface may not be safe.\n" }
+  else
+    its(:stderr) { should eq "" }
+  end
   its(:exit_status) { should eq 0 }
 end
