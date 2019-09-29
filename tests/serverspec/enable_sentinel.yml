@@ -1,6 +1,7 @@
+---
 - hosts: localhost
   roles:
-    - reallyenglish.redhat-repo
+    - trombik.redhat_repo
     - ansible-role-redis
   vars:
     redis_config:
@@ -8,7 +9,13 @@
       save 900: 1
       bind: "127.0.0.1 {{ ansible_all_ipv4_addresses | join(' ') }}"
     redis_password: password
-
+    os_redis_extra_packages:
+      FreeBSD: []
+      Debian:
+        - redis-sentinel
+      RedHat: []
+      OpenBSD: []
+    redis_extra_packages: "{{ os_redis_extra_packages[ansible_os_family] }}"
     redis_sentinel_enable: true
     redis_sentinel_password: password
     redis_sentinel_master_name: my_database
@@ -17,7 +24,9 @@
     # XXX use non-default values for these because sentinel removes these
     # config from sentinel.conf if the values of these are identical to the
     # default
-    redis_sentinel_parallel_syncs: 2 # this is not recommended but is here for testing purpose
+    #
+    # this is not recommended but is here for testing purpose
+    redis_sentinel_parallel_syncs: 2
     redis_sentinel_failover_timeout: 180001
     redis_sentinel_config:
       bind: "127.0.0.1 {{ ansible_all_ipv4_addresses | join(' ') }}"

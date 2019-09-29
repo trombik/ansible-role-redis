@@ -21,6 +21,9 @@ sentinel_log_file = "#{sentinel_log_dir}/sentinel.log"
 sentinel_restart_command = "service sentinel restart"
 
 case os[:family]
+when "ubuntu"
+  redis_dir = "/var/lib/redis"
+  redis_package_name = "redis-server"
 when "freebsd"
   redis_service_name = "redis"
   redis_config       = "/usr/local/etc/redis/redis.conf"
@@ -122,13 +125,23 @@ end
 
 describe command("redis-cli -a #{redis_password} ping") do
   its(:stdout) { should match(/PONG/) }
-  its(:stderr) { should eq "" }
+  case os[:family]
+  when "freebsd", "openbsd"
+    its(:stderr) { should eq "Warning: Using a password with '-a' option on the command line interface may not be safe.\n" }
+  else
+    its(:stderr) { should eq "" }
+  end
   its(:exit_status) { should eq 0 }
 end
 
 describe command("redis-cli -p #{sentinel_port} -a #{redis_password} info") do
   its(:stdout) { should match(/master0:name=my_database,status=ok,address=#{ Regexp.escape("10.0.2.15:6379") },slaves=0,sentinels=1/) }
-  its(:stderr) { should eq "" }
+  case os[:family]
+  when "freebsd", "openbsd"
+    its(:stderr) { should eq "Warning: Using a password with '-a' option on the command line interface may not be safe.\n" }
+  else
+    its(:stderr) { should eq "" }
+  end
 end
 
 describe command(sentinel_restart_command) do

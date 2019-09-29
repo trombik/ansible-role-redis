@@ -1,7 +1,8 @@
+---
 - hosts: localhost
   pre_tasks:
   roles:
-    - role: reallyenglish.redhat-repo
+    - role: trombik.redhat_repo
       when: ansible_os_family == 'RedHat'
     - ansible-role-redis
   vars:

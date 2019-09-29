@@ -1,4 +1,4 @@
-# ansible-role-redis
+# `trombik.redis``
 
 Install and configures redis and sentinel.
 
@@ -11,16 +11,6 @@ the role. It is user's responsibility to protect redis and sentinel.
 
 In the role, sentinel support is supposed to work, but not all platforms have
 been tested. Expect bugs.
-
-## Notes for Ubuntu and CentOS users
-
-The role installs redis version 2.x.
-
-## Notes for Ubuntu users
-
-Standalone redis configuration should work, but sentinel will not work. See
-[issue #18](https://github.com/reallyenglish/ansible-role-redis/issues/18) and
-[issue #19](https://github.com/reallyenglish/ansible-role-redis/issues/19).
 
 # Requirements
 
@@ -349,16 +339,18 @@ __redis_config_default:
 
 ```yaml
 dependencies:
-  - { role: reallyenglish.redhat-repo, when: ansible_os_family == 'RedHat' }
+  - { role: trombik.redhat-repo, when: ansible_os_family == 'RedHat' }
 ```
 
 # Example Playbook
 
 ```yaml
+---
 - hosts: localhost
   pre_tasks:
   roles:
-    - reallyenglish.redhat-repo
+    - role: trombik.redhat_repo
+      when: ansible_os_family == 'RedHat'
     - ansible-role-redis
   vars:
     redis_config:
@@ -377,7 +369,7 @@ dependencies:
 # License
 
 ```
-Copyright (c) 2016 Tomoyuki Sakurai <tomoyukis@reallyenglish.com>
+Copyright (c) 2016 Tomoyuki Sakurai <y@trombik.org>
 
 Permission to use, copy, modify, and distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -394,4 +386,4 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # Author Information
 
-Tomoyuki Sakurai <tomoyukis@reallyenglish.com>
+Tomoyuki Sakurai <y@trombik.org>
