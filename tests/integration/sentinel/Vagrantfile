@@ -47,19 +47,14 @@ Vagrant.configure("2") do |config|
     v.memory = 512
     v.cpus = 1
   end
-  config.vm.box = "mitsuruy/ansible-freebsd-10.3-amd64"
+  config.vm.box = "trombik/ansible-freebsd-12.0-amd64"
 
-  ip = {
-    master: "192.168.90.100",
-    slave1: "192.168.90.201",
-    slave2: "192.168.90.202"
-  }
-  config.vm.define "master" do |c|
-    c.vm.network "private_network", ip: ip[:master]
+  config.vm.define "192.168.90.100" do |c|
+    c.vm.network "private_network", ip: "192.168.90.100"
     c.vm.hostname = "master.virtualbox.trombik.org"
     c.vm.provision :ansible do |ansible|
       ansible.playbook = "site.yml"
-      ansible.limit = ip[:master]
+      ansible.limit = "192.168.90.100"
       ansible.verbose = "v"
       ansible.extra_vars = {
         ansible_python_interpreter: "/usr/local/bin/python",
@@ -71,12 +66,12 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.vm.define "slave1" do |c|
-    c.vm.network "private_network", ip: ip[:slave1]
+  config.vm.define "192.168.90.201" do |c|
+    c.vm.network "private_network", ip: "192.168.90.201"
     c.vm.hostname = "slave1.virtualbox.trombik.org"
     c.vm.provision :ansible do |ansible|
       ansible.playbook = "site.yml"
-      ansible.limit = ip[:slave1]
+      ansible.limit = "192.168.90.201"
       ansible.verbose = "v"
       ansible.extra_vars = {
         ansible_python_interpreter: "/usr/local/bin/python",
@@ -88,12 +83,12 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.vm.define "slave2" do |c|
-    c.vm.network "private_network", ip: ip[:slave2]
+  config.vm.define "192.168.90.202" do |c|
+    c.vm.network "private_network", ip: "192.168.90.202"
     c.vm.hostname = "slave2.virtualbox.trombik.org"
     c.vm.provision :ansible do |ansible|
       ansible.playbook = "site.yml"
-      ansible.limit = ip[:slave2]
+      ansible.limit = "192.168.90.202"
       ansible.verbose = "v"
       ansible.extra_vars = {
         ansible_python_interpreter: "/usr/local/bin/python",
