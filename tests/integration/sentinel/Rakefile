@@ -1,13 +1,19 @@
+require "rake"
+require "rspec/core/rake_task"
 require "tempfile"
 require "pathname"
-require "net/http"
-require "tempfile"
+
+ENV["TERM"] = "xterm" # XXX TERM must be defined or pkg_add fails
 
 test_dir = Pathname.new(__FILE__).dirname
 role_dir = Pathname.new(test_dir).parent.parent.parent
 role_name = Pathname.new(role_dir).basename
-required_roles = %w[
-]
+
+def vagrant(cmd)
+  Bundler.with_clean_env do
+    sh "vagrant #{cmd}"
+  end
+end
 
 task default: %w[test]
 
@@ -16,12 +22,14 @@ task test: [:clean, :prepare, :do_test, :ensure_clean] do
 end
 
 desc "clean"
-task clean: [:clean_vagrant, :clean_roles, :clean_role] do
+task clean: [:clean_vagrant, :clean_role] do
 end
 
 desc "destroy vagrant nodes"
 task :clean_vagrant do
-  sh "vagrant destroy -f"
+  # XXX `vagrant destroy` failes with exit status 1 when there is no VM to
+  # destroy
+  vagrant "destroy -f || true"
 end
 
 desc "rm roles/*"
@@ -39,15 +47,6 @@ task :prepare_roles do
   sh "ansible-galaxy install -r requirements.yml -p roles"
 end
 
-desc "clean up required roles"
-task :clean_roles do
-  required_roles.each do |r|
-    Dir.chdir("roles") do
-      sh "rm -rf #{r}"
-    end
-  end
-end
-
 desc "prepare role"
 task :prepare_role do
   ignore = %w[vendor .kitchen .git tests spec].map { |f| "#{role_name}/#{f}" }
@@ -61,7 +60,7 @@ end
 
 desc "vagrant up"
 task :vagrant_up do
-  sh "vagrant up"
+  vagrant "up"
 end
 
 desc "do clean task even if it has been executed"
@@ -71,7 +70,58 @@ task :ensure_clean do
   Rake::Task["clean"].invoke
 end
 
-desc "Do the test"
-task :do_test do
-  sh "bundle exec rspec"
+def stories
+  directories = []
+  Dir.glob("./spec/stories/*").each do |dir|
+    next unless File.directory?(dir)
+    directories << File.basename(dir)
+  end
+  directories
+end
+
+def spec_files_in_story(story)
+  Dir.glob("./spec/stories/#{story}/*_spec.rb").sort
+end
+
+def task_of_spec(spec)
+  file = File.basename(spec)
+  # 000_192.168.90.100_spec.rb
+  File.basename(file).gsub("_spec.rb", "").gsub(".", "_")
+end
+
+def target_of_spec(spec)
+  name = File.basename(spec)
+  _number, target, _rest = name.split("_")
+  target
+end
+
+def index_of_spec(spec)
+  name = File.basename(spec)
+  number, _target, _rest = name.split("_")
+  number
+end
+
+def all_tasks_in_story(story)
+  files = spec_files_in_story(story)
+  files.map { |f| task_of_spec(f) }
+end
+
+namespace :spec do
+  stories.each do |story|
+    namespace story.to_sym do
+      desc "run story #{story}"
+      task all: all_tasks_in_story(story)
+
+      spec_files_in_story(story).each do |spec_file|
+        target = target_of_spec(spec_file)
+        index = index_of_spec(spec_file)
+        desc format("rspec story: %s #%s on %s", story, index, target)
+        RSpec::Core::RakeTask.new(task_of_spec(spec_file)) do |t|
+          puts "Running serverspec story `#{story}` on `#{target} index #{index}`"
+          ENV['TARGET_HOST'] = target
+          t.pattern = spec_file
+        end
+      end
+    end
+  end
 end

@@ -1,57 +1,41 @@
-require "infrataster/rspec"
-require "infrataster-plugin-redis"
 require "redis"
+require "serverspec"
+require "net/ssh/proxy/command"
+require "vagrant/ssh/config"
 
-ENV["VAGRANT_CWD"] = File.dirname(__FILE__)
-ENV["LANG"] = "C"
-
-if ENV["JENKINS_HOME"]
-  # rubocop:disable Metrics/LineLength
-  # XXX "bundle exec vagrant" fails to load.
-  #
-  # > bundle exec vagrant --version
-  # bundler: failed to load command: vagrant (/usr/local/bin/vagrant)
-  # Gem::Exception: can't find executable vagrant
-  #   /usr/local/lib/ruby/gems/2.2/gems/bundler-1.12.1/lib/bundler/rubygems_integration.rb:373:in `block in replace_bin_path'
-  #   /usr/local/lib/ruby/gems/2.2/gems/bundler-1.12.1/lib/bundler/rubygems_integration.rb:387:in `block in replace_bin_path'
-  #   /usr/local/bin/vagrant:23:in `<top (required)>'
-  #
-  # this causes "vagrant ssh-config" to fail, invoked in a spec file, i.e. when
-  # you need to ssh to a vagrant host.
-  #
-  # include the path of bin to vagrant
-  vagrant_real_path = `pkg info -l vagrant | grep -v '/usr/local/bin/vagrant' | grep -E 'bin\/vagrant$'| sed -e 's/^[[:space:]]*//'`
-  # rubocop:enable Metrics/LineLength
-  vagrant_bin_dir = File.dirname(vagrant_real_path)
-  ENV["PATH"] = "#{vagrant_bin_dir}:#{ENV['PATH']}"
-end
-
-Infrataster::Server.define(
-  :master,
-  "192.168.90.100",
-  vagrant: true,
-  redis: { host: "192.168.90.100" }
+$LOAD_PATH.unshift(
+  Pathname.new(File.dirname(__FILE__)).parent.parent + "ruby" + "lib"
 )
 
-Infrataster::Server.define(
-  :slave1,
-  "192.168.90.201",
-  vagrant: true,
-  redis: { host: "192.168.90.201" }
-)
+Dir[File.dirname(__FILE__) + "/shared_examples/*.rb"].each { |f| require f }
 
-Infrataster::Server.define(
-  :slave2,
-  "192.168.90.202",
-  vagrant: true,
-  redis: { host: "192.168.90.202" }
-)
+host = ENV["TARGET_HOST"]
+proxy = nil
+options = {}
 
-RSpec.configure do |config|
-  config.expect_with :rspec do |expectations|
-    expectations.include_chain_clauses_in_custom_matcher_descriptions = true
-  end
-  config.mock_with :rspec do |mocks|
-    mocks.verify_partial_doubles = true
-  end
-end
+ssh_options = Vagrant::SSH::Config.for(host)
+puts ssh_options
+proxy = if ssh_options.key?("ProxyCommand".downcase)
+          Net::SSH::Proxy::Command.new(ssh_options["ProxyCommand".downcase])
+        else
+          false
+        end
+
+options = {
+  host_name: ssh_options["HostName".downcase],
+  port: ssh_options["Port".downcase],
+  user: ssh_options["User".downcase],
+  keys: ssh_options["IdentityFile".downcase],
+  keys_only: ssh_options["IdentitiesOnly".downcase],
+  verify_host_key: ssh_options["StrictHostKeyChecking".downcase]
+}
+# host_name, port, user, keys, keys_only, verify_host_key
+options[:proxy] = proxy if proxy
+
+set :backend, :ssh
+#set :sudo_password, ENV["SUDO_PASSWORD"]
+
+set :host, host
+set :ssh_options, options
+#set :request_pty, true
+set :env, LANG: "C", LC_MESSAGES: "C"
