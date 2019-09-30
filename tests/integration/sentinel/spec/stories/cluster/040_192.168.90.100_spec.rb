@@ -9,7 +9,7 @@ context "when master redis is down" do
     its(:exit_status) { should eq 0 }
   end
 
-  describe "#{ENV['TARGET_HOST']}" do
+  describe ENV["TARGET_HOST"] do
     sleep 10
     it_behaves_like "master adress is not", "192.168.90.100"
   end

@@ -1,5 +1,6 @@
 source "https://rubygems.org"
 
+gem "infrataster-plugin-redis"
 gem "kitchen-ansible"
 gem "kitchen-sync", "~> 2.1.1", git: "https://github.com/trombik/kitchen-sync.git", branch: "without_full_path_to_rsync"
 gem "kitchen-vagrant"
@@ -11,5 +12,4 @@ gem "rubocop", "~> 0.51.0"
 gem "serverspec"
 gem "specinfra"
 gem "test-kitchen"
-gem "infrataster-plugin-redis"
 gem "vagrant-ssh-config", git: "https://github.com/trombik/vagrant-ssh-config.git", branch: "master"
