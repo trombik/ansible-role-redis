@@ -10,8 +10,6 @@ $LOAD_PATH.unshift(
 Dir[File.dirname(__FILE__) + "/shared_examples/*.rb"].each { |f| require f }
 
 host = ENV["TARGET_HOST"]
-proxy = nil
-options = {}
 
 ssh_options = Vagrant::SSH::Config.for(host)
 puts ssh_options
@@ -33,9 +31,9 @@ options = {
 options[:proxy] = proxy if proxy
 
 set :backend, :ssh
-#set :sudo_password, ENV["SUDO_PASSWORD"]
+# set :sudo_password, ENV["SUDO_PASSWORD"]
 
 set :host, host
 set :ssh_options, options
-#set :request_pty, true
+# set :request_pty, true
 set :env, LANG: "C", LC_MESSAGES: "C"

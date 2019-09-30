@@ -10,7 +10,7 @@ context "when client has sentinel support" do
   describe "the cluster" do
     let(:url) { "redis://#{master_name}" }
     let(:sentinels) do
-       all_nodes.map {|n| { host: n, port: 26_379 } }
+      all_nodes.map { |n| { host: n, port: 26_379 } }
     end
     let(:redis_master) do
       Redis.new(
