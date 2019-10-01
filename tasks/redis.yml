@@ -127,6 +127,10 @@
   notify: Restart redis
 
 - name: Detect the real master from Redis Sentinel
+  # XXX galaxy warns that
+  # [E306] Shells that use pipes should set the pipefail option
+  # but pipefail is not a standard
+  #
   # all nodes must know who is the master when:
   #
   # - sentinel is enabled
@@ -141,6 +145,10 @@
 
 - name: Make sure redis-cli returns successfully
   # redis-cli returns zero exit status but the result can be a failure
+  #
+  # XXX galaxy warns that
+  # [E602] Don't compare to empty string
+  # see https://github.com/ansible/ansible-lint/issues/457
   assert:
     that:
       - redis_register_real_master.stderr == ''
@@ -163,9 +171,10 @@
     line: "slaveof {{ redis_register_real_master.stdout }} {{ redis_config_merged['port'] }}"
     insertafter: 'EOF'
     state: 'present'
-  when: redis_sentinel_enable and
-        not redis_fact_is_master and
-        not redis_fact_has_slaveof
+  when:
+    - redis_sentinel_enable
+    - not redis_fact_is_master
+    - not redis_fact_has_slaveof
   notify: Restart redis
 
 - name: Create redis.conf.ansible

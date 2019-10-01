@@ -1,10 +1,13 @@
 ---
 
-- include_vars: "{{ ansible_os_family }}.yml"
+- name: Include ansible_os_family.yml
+  include_vars: "{{ ansible_os_family }}.yml"
 
-- include: "install-{{ ansible_os_family }}.yml"
+- name: Include install-ansible_os_family.yml
+  include: "install-{{ ansible_os_family }}.yml"
 
-- include: sentinel.yml
+- name: Include sentinel.yml
+  include: sentinel.yml
   # must be included before redis starts.
   when: redis_sentinel_enable
 
@@ -14,7 +17,9 @@
   meta: flush_handlers
   when: redis_sentinel_enable
 
-- include: "configure-{{ ansible_os_family }}.yml"
+- name: Include configure-ansible_os_family.yml
+  include: "configure-{{ ansible_os_family }}.yml"
 
-- include: redis.yml
+- name: Include redis.yml
+  include: redis.yml
   when: redis_enable
