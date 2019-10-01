@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  role_name: trombik.redis
+  role_name: redis
   author: Tomoyuki Sakurai
   description: Configures redis
   company: N/A
