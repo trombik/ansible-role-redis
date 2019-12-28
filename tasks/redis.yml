@@ -95,8 +95,7 @@
     regexp: '^include {{ redis_conf_file_ansible }}'
     dest: '{{ redis_conf_file }}'
     state: 'absent'
-  when: redis_register_remove_saves is defined and
-        redis_register_remove_saves | changed
+  when: redis_register_remove_saves is defined and redis_register_remove_saves.changed
   notify: Restart redis
 
 - set_fact:
@@ -190,7 +189,8 @@
     group: "{{ redis_group }}"
     mode: 0755
     state: directory
-  when: "{{ 'logfile' in redis_config_merged }}"
+  when:
+    - "'logfile' in redis_config_merged"
   notify: Restart redis
 
 - name: Start redis
