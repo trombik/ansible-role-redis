@@ -1,3 +1,7 @@
+## Release 1.0.4
+
+* ff07281 bugfix: remove warnings from ansible, and QA
+
 ## Release 1.0.3
 
 * 0925c97 QA
