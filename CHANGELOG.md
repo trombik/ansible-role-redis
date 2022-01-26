@@ -1,3 +1,9 @@
+## Release 1.1.0
+
+* bd0d8d6 bugfix: fix bugs with recent redis version 6
+* ad9b61c breaking: drop CentOS support
+* a376d1f bugfix: update gems, boxes, and supported versions
+
 ## Release 1.0.4
 
 * ff07281 bugfix: remove warnings from ansible, and QA
