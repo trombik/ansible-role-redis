@@ -9,6 +9,7 @@
     redis_config:
       databases: 17
       save 900: 1
+      requirepass: "{{ redis_password }}"
     redis_password: password
     redhat_repo_extra_packages:
       - epel-release
