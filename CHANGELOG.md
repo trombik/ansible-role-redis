@@ -1,3 +1,8 @@
+## Release 1.1.1
+
+* da04b49 ci: update Gemfile.lock for CI
+* 7c5c527 ci: add GitHub Actions
+
 ## Release 1.1.0
 
 * bd0d8d6 bugfix: fix bugs with recent redis version 6
