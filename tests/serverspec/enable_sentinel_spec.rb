@@ -127,7 +127,7 @@ describe command("redis-cli -a #{redis_password} ping") do
   its(:stdout) { should match(/PONG/) }
   case os[:family]
   when "freebsd", "openbsd"
-    its(:stderr) { should eq "Warning: Using a password with '-a' option on the command line interface may not be safe.\n" }
+    its(:stderr) { should eq "Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.\n" }
   else
     its(:stderr) { should eq "" }
   end
@@ -138,7 +138,7 @@ describe command("redis-cli -p #{sentinel_port} -a #{redis_password} info") do
   its(:stdout) { should match(/master0:name=my_database,status=ok,address=#{ Regexp.escape("10.0.2.15:6379") },slaves=0,sentinels=1/) }
   case os[:family]
   when "freebsd", "openbsd"
-    its(:stderr) { should eq "Warning: Using a password with '-a' option on the command line interface may not be safe.\n" }
+    its(:stderr) { should eq "Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.\n" }
   else
     its(:stderr) { should eq "" }
   end

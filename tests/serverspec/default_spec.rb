@@ -91,7 +91,12 @@ if redis_logfile
   describe file(redis_logfile) do
     it { should be_file }
     it { should be_owned_by redis_user }
-    it { should be_grouped_into redis_user }
+    case os[:family]
+    when "ubuntu"
+      it { should be_grouped_into "adm" }
+    else
+      it { should be_grouped_into redis_user }
+    end
   end
 end
 
@@ -106,10 +111,8 @@ end
 
 describe command "redis-cli -a #{redis_password} ping" do
   its(:stdout) { should match(/PONG/) }
-  # XXX 5.0 has `--no-auth-warning` but not 4.x
-  case os[:family]
-  when "freebsd", "openbsd"
-    its(:stderr) { should eq "Warning: Using a password with '-a' option on the command line interface may not be safe.\n" }
+  if os[:family] != "redhat"
+    its(:stderr) { should eq "Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.\n" }
   else
     its(:stderr) { should eq "" }
   end

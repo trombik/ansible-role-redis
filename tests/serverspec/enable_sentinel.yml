@@ -8,6 +8,7 @@
       databases: 17
       save 900: 1
       bind: "127.0.0.1 {{ ansible_all_ipv4_addresses | join(' ') }}"
+      requirepass: "{{ redis_password }}"
     redis_password: password
     os_redis_extra_packages:
       FreeBSD: []
@@ -30,6 +31,7 @@
     redis_sentinel_failover_timeout: 180001
     redis_sentinel_config:
       bind: "127.0.0.1 {{ ansible_all_ipv4_addresses | join(' ') }}"
+      user: "default on >password ~* &* +@all"
     redhat_repo:
       epel:
         mirrorlist: "http://mirrors.fedoraproject.org/mirrorlist?repo=epel-{{ ansible_distribution_major_version }}&arch={{ ansible_architecture }}"
