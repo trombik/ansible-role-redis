@@ -79,6 +79,12 @@ jobs:
         run: |
           virtualbox -h
 
+      - name: Show kitchen diagnose
+        run: |
+          bundle exec kitchen diagnose --all
+
       - name: Run test-kitchen
         run: |
+          touch ~/.ansible_vault_key
+          ls -al ~/
           bundle exec kitchen test ${{ matrix.instance }}
