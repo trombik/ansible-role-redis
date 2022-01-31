@@ -120,7 +120,7 @@ describe command "redis-cli -a #{redis_password} ping" do
 end
 
 describe command "redis-cli ping" do
-  its(:stdout) { should match /NOAUTH Authentication required/ }
+  its(:stdout) { should match(/NOAUTH Authentication required/) }
   its(:stderr) { should eq "" }
   its(:exit_status) { should eq 0 }
 end
