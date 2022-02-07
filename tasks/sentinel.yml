@@ -24,7 +24,7 @@
     path: "{{ redis_sentinel_conf_file }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
-    mode: 0644
+    mode: "0644"
 
 - name: See if redis_sentinel_conf_file_ansible exists
   # if the result is true, it means it is the first ansible-play
@@ -93,6 +93,9 @@
   ansible.builtin.template:
     dest: "{{ redis_sentinel_conf_file_ansible }}"
     src: sentinel.conf.j2
+    mode: "0640"
+    owner: "{{ redis_user }}"
+    group: "{{ redis_group }}"
   notify: Restart sentinel
 
 - name: Create logdir
@@ -100,7 +103,7 @@
     path: "{{ redis_sentinel_logdir }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
-    mode: 0755
+    mode: "0755"
     state: directory
 
 - name: Start sentinel

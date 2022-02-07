@@ -23,13 +23,14 @@
   ansible.builtin.copy:
     src: RedHat/semodule_load_te.sh
     dest: /bin/semodule_load_te
-    mode: 0755
+    mode: "0755"
 
 - name: Configure SELinux policy for sentinel
   ansible.builtin.template:
     src: RedHat/redis_sentinel.te
     dest: "{{ redis_conf_dir }}/redis_sentinel.te"
     validate: "checkmodule -M -m %s"
+    mode: "0644"
   register: register_redis_sentinel_te
 
 - name: Load SELinux policy for sentinel
