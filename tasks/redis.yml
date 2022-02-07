@@ -7,7 +7,7 @@
   # redis user. the directory must be writable by the user.
   ansible.builtin.file:
     path: "{{ redis_conf_dir }}"
-    mode: 0755
+    mode: "0755"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
     state: directory
@@ -19,7 +19,7 @@
 - name: Create DB directory
   ansible.builtin.file:
     path: "{{ redis_config_merged['dir'] }}"
-    mode: 0755
+    mode: "0755"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
     state: directory
@@ -182,6 +182,9 @@
   ansible.builtin.template:
     src: redis.conf.j2
     dest: "{{ redis_conf_file_ansible }}"
+    mode: "0644"
+    owner: "{{ redis_user }}"
+    group: "{{ redis_group }}"
   notify: Restart redis
 
 - name: Ensure log dir exists
@@ -189,7 +192,7 @@
     path: "{{ redis_config_merged['logfile'] | dirname }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
-    mode: 0755
+    mode: "0755"
     state: directory
   when:
     - "'logfile' in redis_config_merged"
