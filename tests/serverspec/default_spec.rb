@@ -91,12 +91,7 @@ if redis_logfile
   describe file(redis_logfile) do
     it { should be_file }
     it { should be_owned_by redis_user }
-    case os[:family]
-    when "ubuntu"
-      it { should be_grouped_into "adm" }
-    else
-      it { should be_grouped_into redis_user }
-    end
+    it { should be_grouped_into redis_group }
   end
 end
 
