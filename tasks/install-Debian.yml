@@ -1,12 +1,12 @@
 ---
 
 - name: Ensure redis is installed
-  apt:
+  ansible.builtin.apt:
     name: "{{ redis_package }}"
     state: present
     policy_rc_d: 101
 
 - name: Install redis_extra_packages
-  apt:
+  ansible.builtin.apt:
     name: "{{ redis_extra_packages }}"
     state: present

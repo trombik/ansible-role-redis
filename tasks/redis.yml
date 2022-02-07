@@ -5,18 +5,19 @@
 - name: Create config dir for redis
   # when failover takes place, the config file is dinamycally overwritten by
   # redis user. the directory must be writable by the user.
-  file:
+  ansible.builtin.file:
     path: "{{ redis_conf_dir }}"
     mode: 0755
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
     state: directory
 
-- set_fact:
+- name: Set redis_config_merged
+  set_fact:
     redis_config_merged: "{{ redis_config_default | combine(redis_config) }}"
 
 - name: Create DB directory
-  file:
+  ansible.builtin.file:
     path: "{{ redis_config_merged['dir'] }}"
     mode: 0755
     owner: "{{ redis_user }}"
@@ -25,23 +26,23 @@
 
 - name: Register redis_conf_file_ansible
   # see if this is the first ansible-play.
-  stat:
+  ansible.builtin.stat:
     path: "{{ redis_conf_file_ansible }}"
   register: redis_conf_file_ansible_result
 
 - name: See if redis_conf_file exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ redis_conf_file }}"
   register: register_redis_conf_file
 
 - name: Create redis_conf_file if it does not exist
-  file:
+  ansible.builtin.file:
     path: "{{ redis_conf_file }}"
     state: touch
   when: not register_redis_conf_file.stat.exists
 
 - name: Make redis_conf_file editable by redis
-  file:
+  ansible.builtin.file:
     path: "{{ redis_conf_file }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
@@ -65,7 +66,8 @@
   when: not redis_fact_is_master is defined
 
 - name: See if a slaveof line already exists in the main Redis config
-  shell: grep '^slaveof' {{ redis_conf_file }} || true
+  ansible.builtin.shell:
+    cmd: "grep '^slaveof' {{ redis_conf_file }} || true"
   changed_when: false
   register: redis_register_main_config_slaveof
 
@@ -82,7 +84,7 @@
   when: not redis_fact_has_slaveof is defined
 
 - name: Remove default save lines from the main Redis config
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '^save'
     dest: '{{ redis_conf_file }}'
     state: 'absent'
@@ -91,7 +93,7 @@
   notify: Restart redis
 
 - name: Remove include line only if removing the save lines changed
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '^include {{ redis_conf_file_ansible }}'
     dest: '{{ redis_conf_file }}'
     state: 'absent'
@@ -101,13 +103,13 @@
 - set_fact:
     redis_config_save_keys: "{{ redis_config_merged.keys() | select('search', 'save \\d+') | list }}"
 
-- assert:
+- ansible.builtin.assert:
     msg: You need at least one `save` in redis.conf
     that:
       - redis_config_save_keys | length > 0
 
 - name: Insert save lines to the main Redis config
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '^{{ item }} {{ redis_config_merged[item] }}'
     dest: '{{ redis_conf_file }}'
     line: "{{ item }} {{ redis_config_merged[item] }}"
@@ -117,7 +119,7 @@
   notify: Restart redis
 
 - name: Insert include line before the first save line to the main Redis config
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '^include {{ redis_conf_file_ansible }}'
     dest: '{{ redis_conf_file }}'
     line: 'include {{ redis_conf_file_ansible }}'
@@ -135,7 +137,7 @@
   # - sentinel is enabled
   # - the node is a slave
   # - no slaveof is found in redis.conf
-  shell: "redis-cli -h {{ redis_sentinel_group[0] }} -p {{ redis_sentinel_config_merged['port'] }} info | grep 'address=' | awk -F 'address=' '{print $2}' | tr ',' '\n' | grep ':' | awk -F ':' '{print $1}'"
+  ansible.builtin.shell: "redis-cli -h {{ redis_sentinel_group[0] }} -p {{ redis_sentinel_config_merged['port'] }} info | grep 'address=' | awk -F 'address=' '{print $2}' | tr ',' '\n' | grep ':' | awk -F ':' '{print $1}'"
   changed_when: False
   when: redis_sentinel_enable and
         not redis_fact_is_master and
@@ -148,7 +150,7 @@
   # XXX galaxy warns that
   # [E602] Don't compare to empty string
   # see https://github.com/ansible/ansible-lint/issues/457
-  assert:
+  ansible.builtin.assert:
     that:
       - redis_register_real_master.stderr == ''
   when: "'stderr' in redis_register_real_master"
@@ -164,7 +166,7 @@
   # - when sentinel is enabled
   # - the node is a slave
   # - no slaveof in redis.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '^slaveof'
     dest: "{{ redis_conf_file }}"
     line: "slaveof {{ redis_register_real_master.stdout }} {{ redis_config_merged['port'] }}"
@@ -177,13 +179,13 @@
   notify: Restart redis
 
 - name: Create redis.conf.ansible
-  template:
+  ansible.builtin.template:
     src: redis.conf.j2
     dest: "{{ redis_conf_file_ansible }}"
   notify: Restart redis
 
 - name: Ensure log dir exists
-  file:
+  ansible.builtin.file:
     path: "{{ redis_config_merged['logfile'] | dirname }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
@@ -194,7 +196,7 @@
   notify: Restart redis
 
 - name: Start redis
-  service:
+  ansible.builtin.service:
     name: "{{ redis_service }}"
     enabled: yes
     state: started
