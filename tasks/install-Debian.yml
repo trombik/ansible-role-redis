@@ -4,6 +4,7 @@
   apt:
     name: "{{ redis_package }}"
     state: present
+    policy_rc_d: 101
 
 - name: Install redis_extra_packages
   apt:
