@@ -1,3 +1,14 @@
+## Release 1.2.0
+
+* c60014a feat: support Devuan
+* 808fb77 bugfix: update spec
+* a3596a6 bugfix: prevent redis to start on Debian at start up
+* c5ab813 ci: clean up .kitchen.yml
+* b287d6a ci: add x86_64-darwin-19
+* bae565d ci: add kitchen workflow
+* c76c29d bugfix: QA
+* 8a021a1 ci: test if ping without auth fails
+
 ## Release 1.1.1
 
 * da04b49 ci: update Gemfile.lock for CI
