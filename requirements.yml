@@ -1,2 +1,5 @@
 ---
-- name: trombik.redhat_repo
+roles:
+  - name: trombik.redhat_repo
+collections:
+  - name: community.general

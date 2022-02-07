@@ -1,7 +1,7 @@
 ---
 
 - name: Ensure redis is installed
-  yum:
+  ansible.builtin.yum:
     name: "{{ redis_package }}"
     state: present
   register: register_redis_install
@@ -9,7 +9,7 @@
 - name: Remove default redis.conf right after installation finishes
   # XXX the default files conflict, or pollute, i would say, with the desired
   # configuration.
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   when: register_redis_install.changed
@@ -18,6 +18,6 @@
     - "{{ redis_conf_file }}"
 
 - name: Install redis_extra_packages
-  yum:
+  ansible.builtin.yum:
     name: "{{ redis_extra_packages }}"
     state: present

@@ -6,21 +6,21 @@
 - include: "configure-sentinel-{{ ansible_os_family }}.yml"
 
 - name: Create conf directory
-  file:
+  ansible.builtin.file:
     path: "{{ redis_conf_dir }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
     state: directory
 
 - name: Ensure sentinel.conf exists
-  file:
+  ansible.builtin.file:
     path: "{{ redis_sentinel_conf_file }}"
     state: touch
   changed_when: false
 
 - name: Ensure sentnel.conf is writable by redis_user
   # as sentinel.conf is modified by redis, it must be owned by the user
-  file:
+  ansible.builtin.file:
     path: "{{ redis_sentinel_conf_file }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
@@ -28,7 +28,7 @@
 
 - name: See if redis_sentinel_conf_file_ansible exists
   # if the result is true, it means it is the first ansible-play
-  stat:
+  ansible.builtin.stat:
     path: "{{ redis_sentinel_conf_file_ansible }}"
   register: redis_sentinel_conf_file_ansible_stat_result
 
@@ -42,7 +42,7 @@
   #   generates on runtime
   #
   # this task should be performed only when ansible plays for the first time
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: "^sentinel monitor {{ redis_sentinel_master_name }} {{ redis_sentinel_group[0] }}"
     dest: "{{ redis_sentinel_conf_file }}"
     line: "sentinel monitor {{ redis_sentinel_master_name }} {{ redis_sentinel_group[0] }} {{ redis_sentinel_master_port }} {{ redis_sentinel_quorum }}"
@@ -51,7 +51,7 @@
   notify: Restart sentinel
 
 - name: Inject down-after-milliseconds to sentinel.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: "^sentinel down-after-milliseconds {{ redis_sentinel_master_name }} {{ redis_sentinel_down_after_milliseconds }}"
     dest: "{{ redis_sentinel_conf_file }}"
     line: "sentinel down-after-milliseconds {{ redis_sentinel_master_name }} {{ redis_sentinel_down_after_milliseconds }}"
@@ -60,7 +60,7 @@
   notify: Restart sentinel
 
 - name: Inject parallel-syncs to sentinel.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: "^sentinel parallel-syncs {{ redis_sentinel_master_name }} {{ redis_sentinel_parallel_syncs }}"
     dest: "{{ redis_sentinel_conf_file }}"
     line: "sentinel parallel-syncs {{ redis_sentinel_master_name }} {{ redis_sentinel_parallel_syncs }}"
@@ -69,7 +69,7 @@
   notify: Restart sentinel
 
 - name: Inject failover-timeout to sentinel.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: "^sentinel failover-timeout {{ redis_sentinel_master_name }} {{ redis_sentinel_failover_timeout }}"
     dest: "{{ redis_sentinel_conf_file }}"
     line: "sentinel failover-timeout {{ redis_sentinel_master_name }} {{ redis_sentinel_failover_timeout }}"
@@ -79,7 +79,7 @@
 
 - name: include redis_sentinel_conf_file_ansible in sentinel.conf
   # make sure sentinel.conf.ansible is included
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ redis_sentinel_conf_file }}"
     regexp: "^include "
     line: "include {{ redis_sentinel_conf_file_ansible }}"
@@ -90,13 +90,13 @@
 
 - name: Create sentinel.conf.ansible
   # this file is static one and all static configuration should go in to it.
-  template:
+  ansible.builtin.template:
     dest: "{{ redis_sentinel_conf_file_ansible }}"
     src: sentinel.conf.j2
   notify: Restart sentinel
 
 - name: Create logdir
-  file:
+  ansible.builtin.file:
     path: "{{ redis_sentinel_logdir }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
@@ -104,7 +104,7 @@
     state: directory
 
 - name: Start sentinel
-  service:
+  ansible.builtin.service:
     name: "{{ redis_sentinel_service }}"
     enabled: yes
     state: started

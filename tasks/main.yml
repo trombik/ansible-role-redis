@@ -14,7 +14,7 @@
 - name: Flush the handlers so Sentinel is up and running before the redis servers
   # XXX do NOT notify "Restart redis" handler before this task. If you do,
   # initial ansible play would fail because redis is not configured at all.
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
   when: redis_sentinel_enable
 
 - name: Include configure-ansible_os_family.yml
