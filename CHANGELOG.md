@@ -1,3 +1,8 @@
+## Release 1.2.1
+
+* 5dc224c bugfix: qoute octal permission values
+* 98a3857 bugfix: FQCN'fy
+
 ## Release 1.2.0
 
 * c60014a feat: support Devuan
