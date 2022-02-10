@@ -42,17 +42,10 @@ redis_dir          = case os[:family]
                      when "openbsd"
                        "/var/redis"
                      end
-redis_log_dir      = case os[:family]
-                     when "openbsd"
-                       nil
-                     else
-                       "/var/log/redis"
-                     end
+redis_log_dir      = "/var/log/redis"
 redis_logfile      = case os[:family]
-                     when "freebsd", "redhat", "fedora"
+                     when "freebsd", "redhat", "fedora", "openbsd"
                        "#{redis_log_dir}/redis.log"
-                     when "openbsd"
-                       nil
                      when "ubuntu", "devuan"
                        "#{redis_log_dir}/redis-server.log"
                      end
@@ -74,13 +67,11 @@ when "freebsd"
   end
 end
 
-if redis_log_dir
-  describe file(redis_log_dir) do
-    it { should be_directory }
-    it { should be_mode 755 }
-    it { should be_owned_by redis_user }
-    it { should be_grouped_into redis_group }
-  end
+describe file(redis_log_dir) do
+  it { should be_directory }
+  it { should be_mode 755 }
+  it { should be_owned_by redis_user }
+  it { should be_grouped_into redis_group }
 end
 
 describe file(redis_dir) do
@@ -88,6 +79,21 @@ describe file(redis_dir) do
   it { should be_mode 755 }
   it { should be_owned_by redis_user }
   it { should be_grouped_into redis_group }
+end
+
+describe file redis_pid_dir do
+  it { should exist }
+  it { should be_directory }
+  it { should be_owned_by redis_user }
+  it { should be_grouped_into redis_group }
+  case os[:family]
+  when "openbsd"
+    it { should be_mode 750 }
+  when "ubuntu"
+    it { should be_mode 2755 }
+  else
+    it { should be_mode 755 }
+  end
 end
 
 describe file(redis_config) do
@@ -100,6 +106,7 @@ end
 
 describe file(redis_config_ansible) do
   it { should be_file }
+  its(:content) { should match(/Managed by ansible/) }
   its(:content) { should match Regexp.escape("pidfile #{redis_pidfile}") }
   if redis_logfile
     its(:content) { should match Regexp.escape("logfile #{redis_logfile}") }
