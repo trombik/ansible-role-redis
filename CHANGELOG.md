@@ -1,3 +1,8 @@
+## Release 1.3.0
+
+* 648e04c bugfix: refactor specs
+* e3ae9b8 feat: support Fedora
+
 ## Release 1.2.1
 
 * 5dc224c bugfix: qoute octal permission values
