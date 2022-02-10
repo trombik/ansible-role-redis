@@ -2,8 +2,6 @@
 - hosts: localhost
   pre_tasks:
   roles:
-    - role: trombik.redhat_repo
-      when: ansible_os_family == 'RedHat'
     - ansible-role-redis
   vars:
     redis_config:
@@ -11,10 +9,3 @@
       save 900: 1
       requirepass: "{{ redis_password }}"
     redis_password: password
-    redhat_repo_extra_packages:
-      - epel-release
-    redhat_repo:
-      epel:
-        mirrorlist: "http://mirrors.fedoraproject.org/mirrorlist?repo=epel-{{ ansible_distribution_major_version }}&arch={{ ansible_architecture }}"
-        gpgcheck: yes
-        enabled: yes
