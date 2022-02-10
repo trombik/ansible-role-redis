@@ -3,7 +3,7 @@ __redis_user: redis
 __redis_group: redis
 __redis_package: redis
 __redis_service: redis
-__redis_conf_dir: /etc
+__redis_conf_dir: /etc/redis
 
 __redis_config_default:
   # derived from /etc/redis.conf of redis-2.8.19-2.el7.x86_64
