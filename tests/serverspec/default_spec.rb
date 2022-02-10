@@ -1,43 +1,65 @@
 require "spec_helper"
 require "serverspec"
 
-redis_package_name = "redis-server"
-redis_service_name = "redis-server"
-redis_config       = "/etc/redis/redis.conf"
-redis_user         = "redis"
-redis_group        = "redis"
-redis_dir          = "/var/lib/redis"
-redis_log_dir      = "/var/log/redis"
-redis_port         = 6379
-redis_pidfile = "/var/run/redis/redis-server.pid"
-redis_logfile = "/var/log/redis/redis-server.log"
+redis_package_name = case os[:family]
+                     when "ubuntu", "devuan"
+                       "redis-server"
+                     when "freebsd", "openbsd", "redhat", "fedora"
+                       "redis"
+                     else
+                       raise format("unknown os[:family]: `%s`", os[:family])
+                     end
+redis_service_name = case os[:family]
+                     when "ubuntu", "devuan"
+                       "redis-server"
+                     else
+                       "redis"
+                     end
+redis_conf_dir     = case os[:family]
+                     when "freebsd"
+                       "/usr/local/etc/redis"
+                     else
+                       "/etc/redis"
+                     end
+redis_config       = "#{redis_conf_dir}/redis.conf"
+redis_user         = case os[:family]
+                     when "openbsd"
+                       "_redis"
+                     else
+                       "redis"
+                     end
+redis_group        = case os[:family]
+                     when "openbsd"
+                       "_redis"
+                     else
+                       "redis"
+                     end
+redis_dir          = case os[:family]
+                     when "ubuntu", "redhat", "fedora", "devuan"
+                       "/var/lib/redis"
+                     when "freebsd"
+                       "/var/db/redis"
+                     when "openbsd"
+                       "/var/redis"
+                     end
+redis_log_dir      = case os[:family]
+                     when "openbsd"
+                       nil
+                     else
+                       "/var/log/redis"
+                     end
+redis_logfile      = case os[:family]
+                     when "freebsd", "redhat", "fedora"
+                       "#{redis_log_dir}/redis.log"
+                     when "openbsd"
+                       nil
+                     when "ubuntu", "devuan"
+                       "#{redis_log_dir}/redis-server.log"
+                     end
+redis_pid_dir      = "/var/run/redis"
+redis_pidfile      = "#{redis_pid_dir}/#{redis_service_name}.pid"
 redis_password = "password"
-
-case os[:family]
-when "freebsd"
-  redis_package_name = "redis"
-  redis_service_name = "redis"
-  redis_config       = "/usr/local/etc/redis/redis.conf"
-  redis_dir          = "/var/db/redis"
-  redis_pidfile = "/var/run/redis/redis.pid"
-  redis_logfile = "/var/log/redis/redis.log"
-when "redhat", "fedora"
-  redis_package_name = "redis"
-  redis_service_name = "redis"
-  redis_config       = "/etc/redis/redis.conf"
-  redis_pidfile      = "/var/run/redis/redis.pid"
-  redis_logfile      = "/var/log/redis/redis.log"
-when "openbsd"
-  redis_package_name = "redis"
-  redis_service_name = "redis"
-  redis_user         = "_redis"
-  redis_group        = "_redis"
-  redis_pidfile      = "/var/run/redis/redis.pid"
-  redis_dir          = "/var/redis"
-  redis_logfile      = nil
-  redis_log_dir      = nil
-end
-
+redis_port = 6379
 redis_config_ansible = "#{redis_config}.ansible"
 
 describe package(redis_package_name) do
