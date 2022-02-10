@@ -12,13 +12,9 @@
     group: "{{ redis_group }}"
     state: directory
 
-- name: Set redis_config_merged
-  set_fact:
-    redis_config_merged: "{{ redis_config_default | combine(redis_config) }}"
-
 - name: Create DB directory
   ansible.builtin.file:
-    path: "{{ redis_config_merged['dir'] }}"
+    path: "{{ redis_db_dir }}"
     mode: "0755"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
@@ -101,7 +97,7 @@
   notify: Restart redis
 
 - set_fact:
-    redis_config_save_keys: "{{ redis_config_merged.keys() | select('search', 'save \\d+') | list }}"
+    redis_config_save_keys: "{{ redis_config | regex_search('save \\d+\\s+\\d+') }}"
 
 - ansible.builtin.assert:
     msg: You need at least one `save` in redis.conf
@@ -110,9 +106,9 @@
 
 - name: Insert save lines to the main Redis config
   ansible.builtin.lineinfile:
-    regexp: '^{{ item }} {{ redis_config_merged[item] }}'
+    regexp: '^{{ item }}'
     dest: '{{ redis_conf_file }}'
-    line: "{{ item }} {{ redis_config_merged[item] }}"
+    line: "{{ item }}"
     state: 'present'
   when: redis_config_save_keys | length > 0
   with_items: '{{ redis_config_save_keys }}'
@@ -123,7 +119,7 @@
     regexp: '^include {{ redis_conf_file_ansible }}'
     dest: '{{ redis_conf_file }}'
     line: 'include {{ redis_conf_file_ansible }}'
-    insertbefore: "{{ redis_config_save_keys[0] }} {{ redis_config_merged[redis_config_save_keys[0]] }}"
+    insertbefore: "{{ redis_config_save_keys[0] }}"
     state: present
   notify: Restart redis
 
@@ -169,7 +165,7 @@
   ansible.builtin.lineinfile:
     regexp: '^slaveof'
     dest: "{{ redis_conf_file }}"
-    line: "slaveof {{ redis_register_real_master.stdout }} {{ redis_config_merged['port'] }}"
+    line: "slaveof {{ redis_register_real_master.stdout }} {{ redis_port }}"
     insertafter: 'EOF'
     state: 'present'
   when:
@@ -189,13 +185,11 @@
 
 - name: Ensure log dir exists
   ansible.builtin.file:
-    path: "{{ redis_config_merged['logfile'] | dirname }}"
+    path: "{{ redis_log_dir }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
     mode: "0755"
     state: directory
-  when:
-    - "'logfile' in redis_config_merged"
   notify: Restart redis
 
 - name: Start redis

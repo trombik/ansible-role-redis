@@ -8,11 +8,15 @@ redis_service: "{{ __redis_service }}"
 redis_conf_dir: "{{ __redis_conf_dir }}"
 redis_conf_file: "{{ redis_conf_dir }}/redis.conf"
 redis_conf_file_ansible: "{{ redis_conf_file }}.ansible"
+redis_port: 6379
+redis_log_dir: /var/log/redis
+redis_log_filename: "{{ __redis_log_filename }}"
+redis_log_file: "{{ redis_log_dir }}/{{ redis_log_filename }}"
 
 redis_enable: yes
 
-redis_config_default: "{{ __redis_config_default }}"
-redis_config: {}
+redis_config: ""
+redis_db_dir: "{{ __redis_db_dir }}"
 
 redis_sentinel_group: []
 redis_sentinel_service: "{{ __redis_sentinel_service }}"
