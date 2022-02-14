@@ -1,3 +1,9 @@
+## Release 2.0.0
+
+* 16579ab ci: update kitchen workflow
+* e574748 backward-incompatible: remove defaults by the distributions
+* 1e87af4 backward-incompatible: remove defaults by the distributions
+
 ## Release 1.3.0
 
 * 648e04c bugfix: refactor specs
