@@ -1,11 +1,6 @@
-# `trombik.redis``
+# `trombik.redis`
 
 Install and configures redis and sentinel.
-
-## Notes for all users
-
-Most of default values are respected but `protected-mode` is `no` by default in
-the role. It is user's responsibility to protect redis and sentinel.
 
 ## Notes for uses considering using sentinel for clustering
 
@@ -31,8 +26,7 @@ Example Playbook.
 | `redis_conf_file` | path to `redis.conf` | `{{ redis_conf_dir }}/redis.conf` |
 | `redis_conf_file_ansible` | static config file for redis | `{{ redis_conf_file }}.ansible` |
 | `redis_enable` | enable redis. if true, `tasks/redis.yml` is invoked | `true` |
-| `redis_config_default` | dict of defaults for `redis.conf` | `{{ __redis_config_default }}` |
-| `redis_config` | dict that overrides `redis_config_default` | `{}` |
+| `redis_config` | content of `redis.conf` | `""` |
 
 ## Variables for `sentinel`
 
@@ -52,22 +46,8 @@ Example Playbook.
 | `redis_sentinel_failover_timeout` | `sentinel failover-timeout` | `180000` |
 | `redis_sentinel_logdir` | path to log directory for `sentinel.log` | `{{ __redis_sentinel_logdir }}` |
 | `redis_sentinel_logfile` | path to`sentinel.log` | `{{ redis_sentinel_logdir }}/sentinel.log` |
-| `redis_sentinel_config_default` | dict of defaults for `sentinel.conf` | see below |
-| `redis_sentinel_config` | dict that overrides `redis_sentinel_config_default` | `{}` |
-
-## `redis_sentinel_config_default`
-
-```yaml
-redis_sentinel_config_default:
-  port: 26379
-  dir: /tmp
-  logfile: "{{ redis_sentinel_logfile }}"
-  protected-mode: "no"
-  sentinel auth-pass: "{{ redis_sentinel_master_name }} {{ redis_sentinel_password }}"
-```
-When you set `bind`, the first IP address MUST NOT be `127.0.0.1` (at least in
-redis 3.2.6). If you want `sentinel` to bind to `127.0.0.1` and others, place it
-to the end.
+| `redis_sentinel_port` | the port sentinel binds to | `26379` |
+| `redis_sentinel_config` | content of `sentinel.conf` | `""` |
 
 ## Debian
 
@@ -78,56 +58,7 @@ to the end.
 | `__redis_package` | `redis-server` |
 | `__redis_service` | `redis-server` |
 | `__redis_conf_dir` | `/etc/redis` |
-| `__redis_config_default` | see below |
 | `__redis_sentinel_logdir` | `/var/log/redis` |
-
-### `__redis_config_default` for Debian
-
-```yaml
-__redis_config_default:
-  # derived from /etc/redis/redis.conf of redis-server 2:2.8.4-2
-  daemonize: "yes"
-  pidfile: /var/run/redis/redis-server.pid
-  port: 6379
-  bind: 127.0.0.1
-  timeout: 0
-  tcp-keepalive: 0
-  loglevel: notice
-  logfile: /var/log/redis/redis-server.log
-  databases: 16
-  stop-writes-on-bgsave-error: "yes"
-  rdbcompression: "yes"
-  rdbchecksum: "yes"
-  dbfilename: dump.rdb
-  dir: /var/lib/redis
-  slave-serve-stale-data: "yes"
-  slave-read-only: "yes"
-  repl-disable-tcp-nodelay: "no"
-  slave-priority: 100
-  appendonly: "no"
-  appendfilename: "appendonly.aof"
-  appendfsync: everysec
-  no-appendfsync-on-rewrite: "no"
-  auto-aof-rewrite-percentage: 100
-  auto-aof-rewrite-min-size: 64mb
-  lua-time-limit: 5000
-  slowlog-log-slower-than: 10000
-  slowlog-max-len: 128
-  notify-keyspace-events: '""'
-  hash-max-ziplist-entries: 512
-  hash-max-ziplist-value: 64
-  list-max-ziplist-entries: 512
-  list-max-ziplist-value: 64
-  set-max-intset-entries: 512
-  zset-max-ziplist-entries: 128
-  zset-max-ziplist-value: 64
-  activerehashing: "yes"
-  client-output-buffer-limit normal: 0 0 0
-  client-output-buffer-limit slave: 256mb 64mb 60
-  client-output-buffer-limit pubsub: 32mb 8mb 60
-  hz: 10
-  aof-rewrite-incremental-fsync: "yes"
-```
 
 ## FreeBSD
 
@@ -138,64 +69,8 @@ __redis_config_default:
 | `__redis_package` | `redis` |
 | `__redis_service` | `redis` |
 | `__redis_conf_dir` | `/usr/local/etc/redis` |
-| `__redis_config_default` | see below |
 | `__redis_sentinel_logdir` | `/var/log/redis` |
 
-### `__redis_config_default` for FreeBSD
-
-```yaml
-__redis_config_default:
-  # derived from /usr/local/etc/redis.conf.sample of redis-3.2.6 except "save"
-  bind: 127.0.0.1
-  protected-mode: "yes"
-  port: 6379
-  tcp-backlog: 511
-  timeout: 0
-  tcp-keepalive: 300
-  daemonize: "yes"
-  supervised: "no"
-  pidfile: /var/run/redis/redis.pid
-  loglevel: notice
-  logfile: /var/log/redis/redis.log
-  databases: 16
-  stop-writes-on-bgsave-error: "yes"
-  rdbcompression: "yes"
-  rdbchecksum: "yes"
-  dbfilename: dump.rdb
-  dir: /var/db/redis/
-  slave-serve-stale-data: "yes"
-  slave-read-only: "yes"
-  repl-diskless-sync: "no"
-  repl-diskless-sync-delay: 5
-  repl-disable-tcp-nodelay: "no"
-  slave-priority: 100
-  appendonly: "no"
-  appendfilename: '"appendonly.aof"'
-  appendfsync: everysec
-  no-appendfsync-on-rewrite: "no"
-  auto-aof-rewrite-percentage: 100
-  auto-aof-rewrite-min-size: 64mb
-  aof-load-truncated: "yes"
-  lua-time-limit: 5000
-  slowlog-log-slower-than: 10000
-  slowlog-max-len: 128
-  latency-monitor-threshold: 0
-  notify-keyspace-events: '""'
-  hash-max-ziplist-entries: 512
-  hash-max-ziplist-value: 64
-  list-max-ziplist-size: -2
-  list-compress-depth: 0
-  set-max-intset-entries: 512
-  zset-max-ziplist-entries: 128
-  zset-max-ziplist-value: 64
-  hll-sparse-max-bytes: 3000
-  activerehashing: "yes"
-  "client-output-buffer-limit normal": 0 0 0
-  "client-output-buffer-limit slave": 256mb 64mb 60
-  "client-output-buffer-limit pubsub": 32mb 8mb 60
-  hz: 10
-  aof-rewrite-incremental-fsync: "yes"
-```
 
 ## OpenBSD
 
@@ -206,67 +81,7 @@ __redis_config_default:
 | `__redis_package` | `redis` |
 | `__redis_service` | `redis` |
 | `__redis_conf_dir` | `/etc/redis` |
-| `__redis_config_default` | see below |
 | `__redis_sentinel_logdir` | `/var/log/redis` |
-
-### `__redis_config_default` for OpenBSD
-
-```yaml
-__redis_config_default:
-  # derived from /usr/local/share/examples/redis/redis.conf of redis-3.2.1 except "save" and "logfile"
-  bind: 127.0.0.1
-  protected-mode: "yes"
-  port: 6379
-  tcp-backlog: 511
-  timeout: 0
-  tcp-keepalive: 300
-  daemonize: "yes"
-  supervised: "no"
-  pidfile: /var/run/redis/redis.pid
-  loglevel: notice
-  syslog-enabled: "yes"
-  syslog-ident: redis
-  syslog-facility: daemon
-  databases: 16
-  stop-writes-on-bgsave-error: "yes"
-  rdbcompression: "yes"
-  rdbchecksum: "yes"
-  dbfilename: dump.rdb
-  dir: /var/redis
-  slave-serve-stale-data: "yes"
-  slave-read-only: "yes"
-  repl-diskless-sync: "no"
-  repl-diskless-sync-delay: 5
-  repl-disable-tcp-nodelay: "no"
-  slave-priority: 100
-  maxclients: 96
-  appendonly: "no"
-  appendfilename: "appendonly.aof"
-  appendfsync: everysec
-  no-appendfsync-on-rewrite: "no"
-  auto-aof-rewrite-percentage: 100
-  auto-aof-rewrite-min-size: 64mb
-  aof-load-truncated: "yes"
-  lua-time-limit: 5000
-  slowlog-log-slower-than: 10000
-  slowlog-max-len: 128
-  latency-monitor-threshold: 0
-  notify-keyspace-events: '""'
-  hash-max-ziplist-entries: 512
-  hash-max-ziplist-value: 64
-  list-max-ziplist-size: -2
-  list-compress-depth: 0
-  set-max-intset-entries: 512
-  zset-max-ziplist-entries: 128
-  zset-max-ziplist-value: 64
-  hll-sparse-max-bytes: 3000
-  activerehashing: "yes"
-  client-output-buffer-limit normal: 0 0 0
-  client-output-buffer-limit slave: 256mb 64mb 60
-  client-output-buffer-limit pubsub: 32mb 8mb 60
-  hz: 10
-  aof-rewrite-incremental-fsync: "yes"
-```
 
 ## RedHat
 
@@ -277,70 +92,11 @@ __redis_config_default:
 | `__redis_package` | `redis` |
 | `__redis_service` | `redis` |
 | `__redis_conf_dir` | `/etc` |
-| `__redis_config_default` | see below |
 | `__redis_sentinel_logdir` | `/var/log/redis` |
-
-### `__redis_config_default` for RedHat
-
-```yaml
-__redis_config_default:
-  # derived from /etc/redis.conf of redis-2.8.19-2.el7.x86_64
-  # except "save"
-  daemonize: "no"
-  pidfile: /var/run/redis/redis.pid
-  port: 6379
-  tcp-backlog: 511
-  bind: 127.0.0.1
-  timeout: 0
-  tcp-keepalive: 0
-  loglevel: notice
-  logfile: /var/log/redis/redis.log
-  databases: 16
-  stop-writes-on-bgsave-error: "yes"
-  rdbcompression: "yes"
-  rdbchecksum: "yes"
-  dbfilename: dump.rdb
-  dir: /var/lib/redis/
-  slave-serve-stale-data: "yes"
-  slave-read-only: "yes"
-  repl-diskless-sync: "no"
-  repl-diskless-sync-delay: 5
-  repl-disable-tcp-nodelay: "no"
-  slave-priority: 100
-  appendonly: "no"
-  appendfilename: "appendonly.aof"
-  appendfsync: everysec
-  no-appendfsync-on-rewrite: "no"
-  auto-aof-rewrite-percentage: 100
-  auto-aof-rewrite-min-size: 64mb
-  aof-load-truncated: "yes"
-  lua-time-limit: 5000
-  slowlog-log-slower-than: 10000
-  slowlog-max-len: 128
-  latency-monitor-threshold: 0
-  notify-keyspace-events: '""'
-  hash-max-ziplist-entries: 512
-  hash-max-ziplist-value: 64
-  list-max-ziplist-entries: 512
-  list-max-ziplist-value: 64
-  set-max-intset-entries: 512
-  zset-max-ziplist-entries: 128
-  zset-max-ziplist-value: 64
-  hll-sparse-max-bytes: 3000
-  activerehashing: "yes"
-  client-output-buffer-limit normal: 0 0 0
-  client-output-buffer-limit slave: 256mb 64mb 60
-  client-output-buffer-limit pubsub: 32mb 8mb 60
-  hz: 10
-  aof-rewrite-incremental-fsync: "yes"
-```
 
 # Dependencies
 
-```yaml
-dependencies:
-  - { role: trombik.redhat-repo, when: ansible_os_family == 'RedHat' }
-```
+None
 
 # Example Playbook
 
@@ -349,21 +105,25 @@ dependencies:
 - hosts: localhost
   pre_tasks:
   roles:
-    - role: trombik.redhat_repo
-      when: ansible_os_family == 'RedHat'
     - ansible-role-redis
   vars:
-    redis_config:
-      databases: 17
-      save 900: 1
     redis_password: password
-    redhat_repo_extra_packages:
-      - epel-release
-    redhat_repo:
-      epel:
-        mirrorlist: "http://mirrors.fedoraproject.org/mirrorlist?repo=epel-{{ ansible_distribution_major_version }}&arch={{ ansible_architecture }}"
-        gpgcheck: yes
-        enabled: yes
+    redis_config: |
+      databases 17
+      save 900 1
+      requirepass "{{ redis_password }}"
+      bind 127.0.0.1
+      protected-mode yes
+      port {{ redis_port }}
+      timeout 0
+      tcp-keepalive 300
+      daemonize yes
+      pidfile /var/run/redis/{{ redis_service }}.pid
+      loglevel notice
+      logfile {{ redis_log_file }}
+      always-show-logo no
+      dbfilename dump.rdb
+      dir {{ redis_db_dir }}/
 ```
 
 # License

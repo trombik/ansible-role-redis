@@ -134,6 +134,7 @@ describe command("redis-cli -a #{redis_password} ping") do
   its(:exit_status) { should eq 0 }
 end
 
+# master0:name=my_database,status=sdown,address=10.0.2.15:6379,slaves=0,sentinels=1
 describe command("redis-cli -p #{sentinel_port} -a #{redis_password} info") do
   its(:stdout) { should match(/master0:name=my_database,status=ok,address=#{ Regexp.escape("10.0.2.15:6379") },slaves=0,sentinels=1/) }
   case os[:family]
